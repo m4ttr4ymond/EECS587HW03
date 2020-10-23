@@ -1,0 +1,6 @@
+*.o
+*.pdf
+.vscode
+slurm-*
+output/*
+hw3
