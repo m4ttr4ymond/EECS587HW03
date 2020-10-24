@@ -1,5 +1,0 @@
-{
-    "code-runner.executorMap": {
-        "javascript": "g++-10"
-    }
-}
