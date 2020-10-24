@@ -3,4 +3,6 @@
 .vscode
 slurm-*
 output/*
-hw3
+hw3_mattrmd
+*.dSYM
+*.executor
