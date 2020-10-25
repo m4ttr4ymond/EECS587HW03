@@ -23,6 +23,7 @@ void push_points(point_queue &, Point *);
 */
 
 double current_max = -DBL_MAX;
+double last_max = 0;
 
 int main(void) {
     point_queue pq(&compare);
@@ -37,17 +38,14 @@ int main(void) {
     #pragma omp parallel
     {
         Point *temp = (Point *)malloc(sizeof(Point));
-        while(pq.size() > 0)
         // for (size_t i = 0; i < 20; i++)
+        do
         {
-            // printf("Iter %d: \n", i);
             push_points(pq, temp);
-        }
+        } while(pq.size() > 0 && current_max - last_max >= epsilon);
 
-        printf("%f\n", current_max);
-
-        // TODO: the theoretical value appears to be below the actual value, which should not happen
-
+        printf("%f,\n", current_max);
+        printf("%d\n", pq.size());
 
         free(temp);
     }
@@ -73,24 +71,23 @@ void push_points(point_queue& pq, Point *temp) {
 
     // Also need to check to see if we have reached the cutoff point
     if (new_max > current_max)
+    {
+        last_max = current_max;
         current_max = new_max;
+        // ToDo maybe check to see if it should exit to skip extra computations
+        // probably not worth the extra cycles
+    }
 
     Point *output = (Point *)malloc(sizeof(Point) * 2);
 
     temp->new_points(new_max, output);
 
     // Makes sure that the value is even worth looking at
-    if(output[0].t_max > temp->a_max)
-    {
+    if(output[0].t_max > current_max)
         pq.push(output[0]);
-        // printf("%f\n", output[0].t_max);
-    }
 
-    if(output[1].t_max > temp->a_max)
-    {
+    if(output[1].t_max > current_max)
         pq.push(output[1]);
-        // printf("%f\n", output[1].t_max);
-    }
 
     free(output);
 }
