@@ -44,7 +44,7 @@ int main(void) {
         while (pq.size() > 0)
         {
             push_points(pq, temp);
-            printf("%d\n", pq.size());
+            // printf("%d\n", pq.size());
         }
 
         printf("%f,\n", current_max);
