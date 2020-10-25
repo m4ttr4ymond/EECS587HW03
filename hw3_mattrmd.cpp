@@ -28,6 +28,7 @@ double last_max = 0;
 
 int main(void) {
     queue<Point> pq;
+    int max = 0;
 
     #pragma omp single
     {
@@ -45,11 +46,11 @@ int main(void) {
         {
             push_points(pq, temp);
             // printf("%d\n", pq.size());
+            if (pq.size() > max)
+                max = pq.size();
         }
 
-        printf("%f,\n", current_max);
-        printf("%d\n", pq.size());
-
+        printf("max value: %d\n", max);
         free(temp);
     }
 
