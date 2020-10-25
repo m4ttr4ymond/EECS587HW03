@@ -47,9 +47,6 @@ int main(void) {
             // printf("%d\n", pq.size());
         }
 
-        printf("%f,\n", current_max);
-        printf("%d\n", pq.size());
-
         free(temp);
     }
 
