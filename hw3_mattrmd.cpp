@@ -4,6 +4,7 @@
 #include "point.h"
 #include "f.h"
 #include <float.h>
+#include <chrono>
 
 using namespace std;
 
@@ -35,20 +36,27 @@ int main(void) {
 
     #pragma omp barrier
 
+    chrono::steady_clock::time_point start = chrono::steady_clock::now();
+
     #pragma omp parallel
     {
         Point *temp = (Point *)malloc(sizeof(Point));
-        // for (size_t i = 0; i < 20; i++)
-        do
+        while (pq.size() > 0)
         {
             push_points(pq, temp);
-        } while(pq.size() > 0 && current_max - last_max >= epsilon);
+            printf("%d\n", pq.size());
+        }
 
         printf("%f,\n", current_max);
         printf("%d\n", pq.size());
 
         free(temp);
     }
+
+    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+    chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double>>(end - start);
+
+    printf("Time: %f seconds\n", time_span.count());
 
     return 0;
 }
@@ -75,6 +83,7 @@ void push_points(point_queue& pq, Point *temp) {
         last_max = current_max;
         current_max = new_max;
         // ToDo maybe check to see if it should exit to skip extra computations
+        if (current_max - last_max < epsilon) return;
         // probably not worth the extra cycles
     }
 
