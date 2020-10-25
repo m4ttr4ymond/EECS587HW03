@@ -13,7 +13,7 @@ bool compare(Point, Point);
 typedef queue<Point> point_queue;
 
 inline void gen_model();
-void push_points(point_queue &, Point *);
+void push_points(queue<Point> &, Point *);
 
 // printf("here\n");
 /*
@@ -27,7 +27,7 @@ double current_max = -DBL_MAX;
 double last_max = 0;
 
 int main(void) {
-    point_queue pq;
+    queue<Point> pq;
 
     #pragma omp single
     {
@@ -65,9 +65,8 @@ bool compare(Point a, Point b) {
     return (a.t_max < b.t_max);
 }
 
-
-
-void push_points(point_queue& pq, Point *temp) {
+void push_points(queue<Point> &pq, Point *temp)
+{
     // Get values from the queue
     *temp = pq.front();
     pq.pop();
@@ -87,16 +86,13 @@ void push_points(point_queue& pq, Point *temp) {
         // probably not worth the extra cycles
     }
 
-    Point *output = (Point *)malloc(sizeof(Point) * 2);
 
-    temp->new_points(new_max, output);
+    temp->new_points(pq, new_max, current_max);
 
-    // Makes sure that the value is even worth looking at
-    if(output[0].t_max > current_max)
-        pq.push(output[0]);
+    // // Makes sure that the value is even worth looking at
+    // if(output[0].t_max > current_max)
+    //     pq.push(output[0]);
 
-    if(output[1].t_max > current_max)
-        pq.push(output[1]);
-
-    free(output);
+    // if(output[1].t_max > current_max)
+    //     pq.push(output[1]);
 }
