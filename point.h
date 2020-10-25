@@ -15,7 +15,6 @@ class Point
         double s;
 
         Point(double, double, double, double, double);
-        Point();
         void new_points(double, Point*);
         double compute_max();
 };
