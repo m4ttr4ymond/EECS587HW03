@@ -18,10 +18,4 @@ double f(double x) {
     return ans;
 }
 
-// double f(double x)
-// {
-//     return -(x-5)*(x-5)+5;
-// }
-
-
 #endif
