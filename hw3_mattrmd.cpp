@@ -10,7 +10,7 @@ using namespace std;
 
 bool compare(Point, Point);
 // may need to make the priority queue copy by reference to make it faster
-typedef priority_queue<Point, vector<Point>, decltype(&compare)> point_queue;
+typedef queue<Point> point_queue;
 
 inline void gen_model();
 void push_points(point_queue &, Point *);
@@ -27,7 +27,7 @@ double current_max = -DBL_MAX;
 double last_max = 0;
 
 int main(void) {
-    point_queue pq(&compare);
+    point_queue pq;
 
     #pragma omp single
     {
@@ -69,7 +69,7 @@ bool compare(Point a, Point b) {
 
 void push_points(point_queue& pq, Point *temp) {
     // Get values from the queue
-    *temp = pq.top();
+    *temp = pq.front();
     pq.pop();
 
     // Don't need to keep going if smaller
