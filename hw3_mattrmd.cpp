@@ -31,14 +31,13 @@ int main(int argc, char *argv[])
 
     public_q.push(Point(a, b, f(a), f(b), s)); // by single thread
 
-    #pragma omp parallel shared(public_q, number_of_threads, free_threads, current_max) num_threads(testing_thread_number)
+    number_of_threads = omp_get_num_threads();
+
+    #pragma omp parallel shared(public_q, number_of_threads, free_threads, current_max) num_threads(stoi(argv[1]))
     {
         #pragma omp master
         {
-            if(argc > 1)
-                number_of_threads = stoi(argv[1]);  //omp_get_num_threads();
-            else
-                number_of_threads = testing_thread_number;
+            number_of_threads = omp_get_num_threads();
 
             free_threads = number_of_threads;
         }
