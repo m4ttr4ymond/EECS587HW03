@@ -1,4 +1,4 @@
-#define testing_thread_number 3
+#define testing_thread_number 4
 
 #include <stdio.h>
 #include <omp.h>
@@ -44,7 +44,7 @@ int main(void) {
             while (private_q.size())
             {
                 push_points(public_q, private_q, temp);                                     // not critical
-                // // printf("%f Gb\n", ((double)private_q.size() * sizeof(Point)) / 1000000000); // going to be removed
+                // printf("%f Gb\n", ((double)private_q.size() * sizeof(Point)) / 1000000000); // going to be removed
             }
 
             #pragma omp atomic
@@ -52,14 +52,14 @@ int main(void) {
 
             while (!private_q.size() && free_threads < number_of_threads); // critical
             {
-                // printf("%d, %d, %d\n", private_q.size(), free_threads, number_of_threads);
+                printf("%d, %d, %d\n", private_q.size(), free_threads, number_of_threads);
                 #pragma omp critical(q)
                 {       
                     if (public_q.size())
                     {                                     // critical
                         private_q.push(public_q.front()); // critical
                         public_q.pop();                   // critical
-                        // printf("taken %d\n", omp_get_thread_num());
+                        printf("taken %d\n", omp_get_thread_num());
 
                         --free_threads; // critical
                     }
@@ -70,7 +70,7 @@ int main(void) {
 
         // WARN There's a bug where the code becomes deadlocked on a race condition
 
-        // printf("Thread %d free\n", omp_get_thread_num());
+        printf("Thread %d free\n", omp_get_thread_num());
         free(temp); // private
     }
 
@@ -101,6 +101,6 @@ void push_points(queue<Point> &public_q, queue<Point> &private_q, Point *temp)
     }
 
     temp->compute_f(); // not critical
-    // printf("computed %d\n", omp_get_thread_num());
+    printf("computed %d\n", omp_get_thread_num());
     temp->new_points(public_q,private_q, free_threads); // not critical
 }
