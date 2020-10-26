@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
             if (public_q.size())
             {
                 push_points(public_q, public_q);
+                printf("Thread %d\n", omp_get_thread_num());
             }
         }
 
