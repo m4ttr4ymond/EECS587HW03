@@ -21,11 +21,9 @@ int main(int argc, char *argv[])
     queue<Point> public_q; // shared
 
     int number_of_threads;
-    chrono::steady_clock::time_point start;
-    chrono::steady_clock::time_point end;
-    chrono::duration<double> time_span;
-
-    start = chrono::steady_clock::now(); // by single thread
+    double start;
+    double end;
+    start = omp_get_wtime();
 
     public_q.push(Point(a, b, f(a), f(b))); // by single thread
 
@@ -49,12 +47,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    end = chrono::steady_clock::now(); // by single thread
-    time_span = chrono::duration_cast<chrono::duration<double>>(end - start); // by single thread
+    end = omp_get_wtime();
 
     printf("Total number of cores: %d\n", number_of_threads); // by single thread
     printf("Maximum Value: %f\n", current_max);               // by single thread
-    printf("Time: %f seconds\n", time_span.count());          // by single thread    
+    printf("Time: %f seconds\n", end - start);                // by single thread
 
     return 0;
 }
