@@ -40,16 +40,19 @@ void Point::new_points(queue<Point> &public_q, queue<Point> &private_q, double f
     // left point
     private_q.push(Point(c, target, f_c, a_max, s)); // not critical
 
+    // ToDO could potentiall move ths down to just the critical part, because I don't know if f-threads is critical
     #pragma omp critical(q)
     {
         // right point
         if (f_threads) // critical
         {
-            public_q.push(Point(target, d, a_max, f_d, s)); // not critical
+            // ToDo might want to repalce with a queue of pointers at some point
+            // printf("donated %d\n", omp_get_thread_num());
+            public_q.push(Point(target, d, a_max, f_d, s)); // critical
         }
         else
         {
-            private_q.push(Point(target, d, a_max, f_d, s)); // critical
+            private_q.push(Point(target, d, a_max, f_d, s)); // not critical
         }
     }
 }
