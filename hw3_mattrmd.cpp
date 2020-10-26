@@ -9,6 +9,7 @@
 #include <float.h>
 #include <chrono>
 #include <unistd.h>
+#include <string>
 
 using namespace std;
 
@@ -17,7 +18,8 @@ int free_threads = 0;
 
 double current_max = -DBL_MAX; // shared
 
-int main(void) {
+int main(int argc, char *argv[])
+{
     queue<Point> public_q; // shared
 
     int number_of_threads;
@@ -33,7 +35,11 @@ int main(void) {
     {
         #pragma omp master
         {
-            number_of_threads = testing_thread_number;  //omp_get_num_threads();
+            if(argc > 1)
+                number_of_threads = stoi(argv[1]);  //omp_get_num_threads();
+            else
+                number_of_threads = testing_thread_number;
+
             free_threads = number_of_threads;
         }
 
@@ -47,7 +53,7 @@ int main(void) {
             }
         }
 
-        printf("Thread %d free\n", omp_get_thread_num());
+        // printf("Thread %d free\n", omp_get_thread_num());
     }
 
     end = chrono::steady_clock::now(); // by single thread
@@ -82,7 +88,7 @@ void push_points(queue<Point> &public_q, queue<Point> &pq)
     
     if (temp.t_max < (current_max + epsilon))
     {
-        printf("skipping: %f, %f\n", temp.t_max, (current_max + epsilon));
+        // printf("skipping: %f, %f\n", temp.t_max, (current_max + epsilon));
 
         #pragma omp atomic
         ++free_threads; 
@@ -91,7 +97,7 @@ void push_points(queue<Point> &public_q, queue<Point> &pq)
     }
 
     temp.compute_f();
-    printf("computed %d\n", omp_get_thread_num());
+    // printf("computed %d\n", omp_get_thread_num());
     temp.new_points(public_q);
 
     #pragma omp atomic
