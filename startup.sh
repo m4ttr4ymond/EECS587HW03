@@ -55,4 +55,4 @@ for i in 2000,500 1000,4000; do IFS=","; set -- $i;
 done
 
 # Print all of the processes that are in the queue
-squeue -u mattrmd
+watch squeue -u mattrmd

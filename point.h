@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <queue>
 #include "f.h"
+#include <omp.h>
+
+using namespace std;
 
 class Point
 {
@@ -15,8 +19,9 @@ class Point
         double s;
 
         Point(double, double, double, double, double);
-        void new_points(double, Point*);
-        double compute_max();
+        Point();
+        void new_points(queue<Point> &);
+        double compute_f();
 };
 
 inline Point::Point(double c, double d, double f_c, double f_d, double s) : c(c), d(d), s(s), f_c(f_c), f_d(f_d)
@@ -27,15 +32,21 @@ inline Point::Point(double c, double d, double f_c, double f_d, double s) : c(c)
     t_max = (f_c + f_d + s * (d - c)) / 2;
 }
 
-inline double Point::compute_max() {
+inline double Point::compute_f() {
     return a_max = f(target);
 }
 
-void Point::new_points(double computed_max, Point *out)
-{   
-    // Left point
-    out[0] = Point(c, target, f_c, computed_max, s);
+void Point::new_points(queue<Point> &pq)
+{
+    #pragma omp critical(q)
+    {
+        // left point
+        pq.push(Point(c, target, f_c, a_max, s));
 
-    // Right point
-    out[1] = Point(target, d, computed_max, f_d, s);
+        // right point
+        pq.push(Point(target, d, a_max, f_d, s));
+    }
 }
+
+inline Point::Point()
+{}

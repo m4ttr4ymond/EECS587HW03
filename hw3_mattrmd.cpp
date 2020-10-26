@@ -1,99 +1,105 @@
+#define testing_thread_number 8
+
 #include <stdio.h>
 #include <omp.h>
 #include <queue>
 #include "point.h"
 #include "f.h"
+#include <omp.h>
 #include <float.h>
 #include <chrono>
+#include <unistd.h>
+#include <string>
 
 using namespace std;
 
-bool compare(Point, Point);
-// may need to make the priority queue copy by reference to make it faster
-typedef priority_queue<Point, vector<Point>, decltype(&compare)> point_queue;
+void push_points(queue<Point> &, queue<Point> &);
+int free_threads = 0;
 
-inline void gen_model();
-void push_points(point_queue &, Point *);
+double current_max = -DBL_MAX; // shared
 
-// printf("here\n");
-/*
-    double a = 1.0;
-    double b = 100.0;
-    double epsilon = 1e-6;
-    double s = 12.0;
-*/
+int main(int argc, char *argv[])
+{
+    queue<Point> public_q; // shared
 
-double current_max = -DBL_MAX;
-double last_max = 0;
+    int number_of_threads;
+    chrono::steady_clock::time_point start;
+    chrono::steady_clock::time_point end;
+    chrono::duration<double> time_span;
 
-int main(void) {
-    point_queue pq(&compare);
+    start = chrono::steady_clock::now(); // by single thread
 
-    #pragma omp single
+    public_q.push(Point(a, b, f(a), f(b), s)); // by single thread
+
+    #pragma omp parallel shared(public_q, number_of_threads, free_threads, current_max) num_threads(testing_thread_number)
     {
-        pq.push(Point(a, b, f(a), f(b), s));
-    }
-
-    #pragma omp barrier
-
-    chrono::steady_clock::time_point start = chrono::steady_clock::now();
-
-    #pragma omp parallel
-    {
-        Point *temp = (Point *)malloc(sizeof(Point));
-        while (pq.size() > 0)
+        #pragma omp master
         {
-            push_points(pq, temp);
-            // printf("%d\n", pq.size());
+            if(argc > 1)
+                number_of_threads = stoi(argv[1]);  //omp_get_num_threads();
+            else
+                number_of_threads = testing_thread_number;
+
+            free_threads = number_of_threads;
         }
 
-        free(temp);
+        #pragma omp barrier
+
+        while (public_q.size() || free_threads < number_of_threads)
+        {
+            if (public_q.size())
+            {
+                push_points(public_q, public_q);
+            }
+        }
+
+        // printf("Thread %d free\n", omp_get_thread_num());
     }
 
-    chrono::steady_clock::time_point end = chrono::steady_clock::now();
-    chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double>>(end - start);
+    end = chrono::steady_clock::now(); // by single thread
+    time_span = chrono::duration_cast<chrono::duration<double>>(end - start); // by single thread
 
-    printf("Time: %f seconds\n", time_span.count());
+    printf("Total number of cores: %d\n", number_of_threads); // by single thread
+    printf("Maximum Value: %f\n", current_max); // by single thread
+    printf("Time: %f seconds\n", time_span.count()); // by single thread
 
     return 0;
 }
 
-bool compare(Point a, Point b) {
-    return (a.t_max < b.t_max);
-}
+void push_points(queue<Point> &public_q, queue<Point> &pq)
+{
+    #pragma omp atomic
+    --free_threads;
 
-
-
-void push_points(point_queue& pq, Point *temp) {
-    // Get values from the queue
-    *temp = pq.top();
-    pq.pop();
-
-    // Don't need to keep going if smaller
-    if (temp->t_max <= current_max) return;
-
-    double new_max = temp->compute_max();
-
-    // Also need to check to see if we have reached the cutoff point
-    if (new_max > current_max)
+    Point temp;
+    #pragma omp critical(q)
     {
-        last_max = current_max;
-        current_max = new_max;
-        // ToDo maybe check to see if it should exit to skip extra computations
-        if (current_max - last_max < epsilon) return;
-        // probably not worth the extra cycles
+        if(pq.size())
+        {
+            temp = pq.front();
+            pq.pop();
+        }
     }
 
-    Point *output = (Point *)malloc(sizeof(Point) * 2);
+    #pragma omp critical(max)
+    {
+        current_max = max(current_max, max(temp.f_c, temp.f_d));
+    }
+    
+    if (temp.t_max < (current_max + epsilon))
+    {
+        // printf("skipping: %f, %f\n", temp.t_max, (current_max + epsilon));
 
-    temp->new_points(new_max, output);
+        #pragma omp atomic
+        ++free_threads; 
+        
+        return;
+    }
 
-    // Makes sure that the value is even worth looking at
-    if(output[0].t_max > current_max)
-        pq.push(output[0]);
+    temp.compute_f();
+    // printf("computed %d\n", omp_get_thread_num());
+    temp.new_points(public_q);
 
-    if(output[1].t_max > current_max)
-        pq.push(output[1]);
-
-    free(output);
-}
+    #pragma omp atomic
+    ++free_threads;
+} 
