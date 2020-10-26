@@ -49,11 +49,8 @@ int main(int argc, char *argv[])
             if (public_q.size())
             {
                 push_points(public_q, public_q);
-                printf("Thread %d\n", omp_get_thread_num());
             }
         }
-
-        // printf("Thread %d free\n", omp_get_thread_num());
     }
 
     end = chrono::steady_clock::now(); // by single thread
@@ -88,8 +85,6 @@ void push_points(queue<Point> &public_q, queue<Point> &pq)
     
     if (temp.t_max < (current_max + epsilon))
     {
-        // printf("skipping: %f, %f\n", temp.t_max, (current_max + epsilon));
-
         #pragma omp atomic
         ++free_threads; 
         
@@ -97,7 +92,6 @@ void push_points(queue<Point> &public_q, queue<Point> &pq)
     }
 
     temp.compute_f();
-    // printf("computed %d\n", omp_get_thread_num());
     temp.new_points(public_q);
 
     #pragma omp atomic
