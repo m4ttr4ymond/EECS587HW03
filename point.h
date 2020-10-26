@@ -16,15 +16,14 @@ class Point
         double f_d;
         double c;
         double d;
-        double s;
 
-        Point(double, double, double, double, double);
+        Point(double, double, double, double);
         Point();
         void new_points(queue<Point> &);
         double compute_f();
 };
 
-inline Point::Point(double c, double d, double f_c, double f_d, double s) : c(c), d(d), s(s), f_c(f_c), f_d(f_d)
+inline Point::Point(double c, double d, double f_c, double f_d) : c(c), d(d), f_c(f_c), f_d(f_d)
 {
     // The point that will be calculated
     target = (c + d) / 2;
@@ -41,10 +40,10 @@ void Point::new_points(queue<Point> &pq)
     #pragma omp critical(q)
     {
         // left point
-        pq.push(Point(c, target, f_c, a_max, s));
+        pq.push(Point(c, target, f_c, a_max));
 
         // right point
-        pq.push(Point(target, d, a_max, f_d, s));
+        pq.push(Point(target, d, a_max, f_d));
     }
 }
 

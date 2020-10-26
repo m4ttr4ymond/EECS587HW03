@@ -31,19 +31,14 @@ if compgen -G $EXPORT_FILENAME > /dev/null; then
 	rm $EXPORT_FILENAME
 fi
 
-# Cycle through matrix sizes
-for i in 2000,500 1000,4000; do IFS=","; set -- $i;
-    # Cycle through processor numbers
-   for p in 1 4 16 36
+for p in 1 4 10 36
     do
-        FILENAME=./$1_$2_$p.sh
+        FILENAME=./$p.sh
         # Copy the batch file template
         cp ./batch_template.sh $FILENAME
 
         # Replace the template terms
         sed -i -e "s/<p_num>/$p/" $FILENAME
-        sed -i -e "s/<m_num>/$1/" $FILENAME
-        sed -i -e "s/<n_num>/$2/" $FILENAME
         sed -i -e "s|<file_name>|$EXPORT_FILENAME|" $FILENAME
 
         # Send the file to slurm
@@ -52,7 +47,6 @@ for i in 2000,500 1000,4000; do IFS=","; set -- $i;
         # Remove the batch file
         rm $FILENAME
     done
-done
 
 # Print all of the processes that are in the queue
 watch squeue -u mattrmd
