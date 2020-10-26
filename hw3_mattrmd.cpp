@@ -56,9 +56,17 @@ int main(int argc, char *argv[])
     end = chrono::steady_clock::now(); // by single thread
     time_span = chrono::duration_cast<chrono::duration<double>>(end - start); // by single thread
 
-    printf("Total number of cores: %d\n", number_of_threads); // by single thread
-    printf("Maximum Value: %f\n", current_max); // by single thread
-    printf("Time: %f seconds\n", time_span.count()); // by single thread
+    if(argc > 2 && stoi(argv[2]))
+    {
+        printf("%d, %f, %f\n", number_of_threads, current_max, time_span.count());
+    }
+    else
+    {
+        printf("Total number of cores: %d\n", number_of_threads); // by single thread
+        printf("Maximum Value: %f\n", current_max);               // by single thread
+        printf("Time: %f seconds\n", time_span.count());          // by single thread
+    }
+    
 
     return 0;
 }
