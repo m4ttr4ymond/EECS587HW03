@@ -4,7 +4,7 @@
 #include <cmath>
 
 double a = 1.0;
-double b = 100.0;
+double b = 10.0;
 double epsilon = 1e-6;
 double s = 12.0;
 
