@@ -1,4 +1,4 @@
-#define testing_thread_number 4
+#define testing_thread_number 8
 
 #include <stdio.h>
 #include <omp.h>
@@ -12,15 +12,13 @@
 
 using namespace std;
 
-inline void gen_model();
-void push_points(queue<Point> &, queue<Point> &, Point *);
+void push_points(queue<Point> &, queue<Point> &);
 int free_threads = 0;
 
 double current_max = -DBL_MAX; // shared
 
 int main(void) {
     queue<Point> public_q; // shared
-    queue<Point> private_q; // private
 
     int number_of_threads;
     chrono::steady_clock::time_point start;
@@ -29,49 +27,27 @@ int main(void) {
 
     start = chrono::steady_clock::now(); // by single thread
 
-    #pragma omp parallel shared(public_q, number_of_threads, start, end, time_span, free_threads) num_threads(testing_thread_number) private(private_q)
+    public_q.push(Point(a, b, f(a), f(b), s)); // by single thread
+
+    #pragma omp parallel shared(public_q, number_of_threads, free_threads, current_max) num_threads(testing_thread_number)
     {
         #pragma omp master
         {
             number_of_threads = testing_thread_number;  //omp_get_num_threads();
-            private_q.push(Point(a, b, f(a), f(b), s)); // by single thread
+            free_threads = number_of_threads;
         }
 
-        Point *temp = (Point *)malloc(sizeof(Point)); // private
+        #pragma omp barrier
 
-        while (free_threads < number_of_threads) // not critical because it it runs an extra time it will do nothing bad
+        while (public_q.size() || free_threads < number_of_threads)
         {
-            while (private_q.size())
+            if (public_q.size())
             {
-                push_points(public_q, private_q, temp);                                     // not critical
-                // printf("%f Gb\n", ((double)private_q.size() * sizeof(Point)) / 1000000000); // going to be removed
+                push_points(public_q, public_q);
             }
-
-            #pragma omp atomic
-            ++free_threads; // critical
-
-            while (!private_q.size() && free_threads < number_of_threads); // critical
-            {
-                printf("%d, %d, %d\n", private_q.size(), free_threads, number_of_threads);
-                #pragma omp critical(q)
-                {       
-                    if (public_q.size())
-                    {                                     // critical
-                        private_q.push(public_q.front()); // critical
-                        public_q.pop();                   // critical
-                        printf("taken %d\n", omp_get_thread_num());
-
-                        --free_threads; // critical
-                    }
-                }
-            }
-            
         }
-
-        // WARN There's a bug where the code becomes deadlocked on a race condition
 
         printf("Thread %d free\n", omp_get_thread_num());
-        free(temp); // private
     }
 
     end = chrono::steady_clock::now(); // by single thread
@@ -84,23 +60,40 @@ int main(void) {
     return 0;
 }
 
-void push_points(queue<Point> &public_q, queue<Point> &private_q, Point *temp)
+void push_points(queue<Point> &public_q, queue<Point> &pq)
 {
-    *temp = private_q.front(); // not critical
-    private_q.pop(); // not critical
+    #pragma omp atomic
+    --free_threads;
 
+    Point temp;
     #pragma omp critical(q)
     {
-        current_max = max(current_max, max(temp->f_c, temp->f_d)); // critical
+        if(pq.size())
+        {
+            temp = pq.front();
+            pq.pop();
+        }
+    }
+
+    #pragma omp critical(max)
+    {
+        current_max = max(current_max, max(temp.f_c, temp.f_d));
     }
     
-    // May get evaluated twice, but won't change the truthfulness of the result
-    if(temp->t_max < (current_max+epsilon)) // not critical
+    if (temp.t_max < (current_max + epsilon))
     {
+        printf("skipping: %f, %f\n", temp.t_max, (current_max + epsilon));
+
+        #pragma omp atomic
+        ++free_threads; 
+        
         return;
     }
 
-    temp->compute_f(); // not critical
+    temp.compute_f();
     printf("computed %d\n", omp_get_thread_num());
-    temp->new_points(public_q,private_q, free_threads); // not critical
-}
+    temp.new_points(public_q);
+
+    #pragma omp atomic
+    ++free_threads;
+} 
