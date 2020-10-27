@@ -6,3 +6,4 @@ output/*
 hw3_mattrmd
 *.dSYM
 *.executor
+*.out

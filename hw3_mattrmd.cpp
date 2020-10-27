@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     printf("Total number of cores: %d\n", number_of_threads); // by single thread
     printf("Maximum Value: %f\n", current_max);               // by single thread
-    printf("Time: %f seconds\n", end - start);                // by single thread
+    printf("Time: %f\n", end - start);                // by single thread
 
     return 0;
 }
