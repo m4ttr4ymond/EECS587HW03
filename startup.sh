@@ -4,15 +4,14 @@
 #Name        : startup.sh
 #Author      : Matt Raymond
 #Class       : EECS 587, Spring 2020
-#Description : Handles compilation and slurm job submission for HW2
+#Description : Handles compilation and slurm job submission for HW3
 #============================================================================
 
 # Load in modules
 module load gcc
-module load openmpi
 
 # Compiler the program with the given compiler optimization level
-mpic++ $1 02.cpp -o 02
+g++ -fopenmp hw3_mattrmd.cpp -o hw3_mattrmd
 
 # Remove excess slurm files
 if compgen -G "./slurm-*" > /dev/null; then
@@ -24,7 +23,7 @@ if ! compgen -G "./output/" > /dev/null; then
 	mkdir ./output
 fi
 
-EXPORT_FILENAME=/home/mattrmd/programs/EECS587HW02/output/result.out
+EXPORT_FILENAME=/home/mattrmd/programs/EECS587HW03/output/result.out
 
 # Remove the output file
 if compgen -G $EXPORT_FILENAME > /dev/null; then
