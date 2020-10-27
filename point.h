@@ -47,5 +47,4 @@ void Point::new_points(queue<Point> &pq)
     }
 }
 
-inline Point::Point()
-{}
+inline Point::Point(){}

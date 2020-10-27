@@ -1,12 +1,9 @@
 #include <stdio.h>
-#include <omp.h>
 #include <queue>
 #include "point.h"
 #include "f.h"
 #include <omp.h>
 #include <float.h>
-#include <unistd.h>
-//#include <string>
 
 using namespace std;
 
