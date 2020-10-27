@@ -2,7 +2,7 @@
 
 FILENAME="run.out"
 
-g++-10 -fopenmp ./hw3_mattrmd.cpp -o hw3_mattrmd;
+g++ -std=c++11 -fopenmp ./hw3_mattrmd.cpp -o hw3_mattrmd;
 
 echo -e "thread no, max, time" > $FILENAME;
 

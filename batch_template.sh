@@ -16,4 +16,4 @@
 #SBATCH --account=eecs587f20_class
 #SBATCH --partition=standard
 
-mpirun -np <p_num> ./02 <m_num> <n_num> >> <file_name>
+./hw3_mattrmd
